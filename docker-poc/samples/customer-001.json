@@ -1,0 +1,9 @@
+{
+  "id": "CUST-001",
+  "type": "customer-profile",
+  "name": "Kim Minseo",
+  "email": "minseo@example.com",
+  "tags": ["premium", "seoul"],
+  "address": {"city": "Seoul", "country": "KR"},
+  "createdAt": "2026-08-19T09:00:00+09:00"
+}

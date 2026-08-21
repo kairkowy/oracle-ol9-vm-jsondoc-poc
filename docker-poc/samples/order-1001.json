@@ -1,0 +1,9 @@
+{
+  "id": "ORDER-1001",
+  "type": "sales-order",
+  "customerId": "CUST-001",
+  "currency": "KRW",
+  "items": [{"sku": "SKU-ICE-01", "quantity": 2, "unitPrice": 12500}],
+  "total": 25000,
+  "orderedAt": "2026-08-19T10:30:00+09:00"
+}

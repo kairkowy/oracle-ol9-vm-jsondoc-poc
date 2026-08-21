@@ -1,0 +1,8 @@
+# Merge into /home/oracle/app/oracle/dbhome/network/admin/tnsnames.ora.
+# The dedicated Gateway listener uses port 1522.
+TRINO_GATEWAY =
+ (DESCRIPTION =
+  (ADDRESS = (PROTOCOL = TCP)(HOST = woko.labs.localhost.com)(PORT = 1522))
+  (CONNECT_DATA = (SID = TRINO))
+  (HS = OK)
+ )

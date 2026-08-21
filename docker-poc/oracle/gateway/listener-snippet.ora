@@ -1,0 +1,18 @@
+# Merge into /home/oracle/app/oracle/dbhome/network/admin/listener.ora.
+# A dedicated listener avoids changing the database listener.
+LISTENER_TRINO =
+ (DESCRIPTION_LIST =
+  (DESCRIPTION =
+   (ADDRESS = (PROTOCOL = TCP)(HOST = woko.labs.localhost.com)(PORT = 1522))
+  )
+ )
+
+SID_LIST_LISTENER_TRINO =
+ (SID_LIST =
+  (SID_DESC =
+   (SID_NAME = TRINO)
+   (ORACLE_HOME = /home/oracle/app/oracle/dbhome)
+   (PROGRAM = dg4odbc)
+   (ENVS = LD_LIBRARY_PATH=/usr/lib64:/absolute/path/to/vendor/lib:/home/oracle/app/oracle/dbhome/lib)
+  )
+ )

@@ -2,6 +2,8 @@
 
 Docker Compose에서 검증한 JSONDoc 흐름을 컴포넌트별 Oracle Linux 9 VM으로 분리하는 설치 프로젝트입니다. Oracle Database 26ai는 기존 외부 시스템을 사용하며, 나머지 서비스는 systemd로 운영합니다.
 
+검증에 사용한 Docker Compose 성공본은 [`docker-poc/`](docker-poc/README.md)에 함께 보관합니다. VM 전환 전 기능 재현이나 설정 비교가 필요할 때 먼저 Docker POC를 실행하십시오.
+
 ## 목표 구조
 
 ```text

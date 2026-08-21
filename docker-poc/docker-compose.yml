@@ -1,0 +1,163 @@
+name: oracle-jsondoc-lab
+
+services:
+  minio:
+    image: minio/minio:RELEASE.2025-07-23T15-54-02Z
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "${HOST_IP:-192.168.56.10}:9000:9000"
+      - "${HOST_IP:-192.168.56.10}:9001:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  minio-init:
+    image: minio/mc:RELEASE.2025-07-21T05-28-08Z
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET: ${MINIO_BUCKET:-jsondocs}
+    volumes:
+      - ./samples:/samples:ro
+      - ./scripts/init-minio.sh:/init-minio.sh:ro
+    entrypoint: ["/bin/sh", "/init-minio.sh"]
+    restart: "no"
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-polaris}
+      POSTGRES_USER: ${POSTGRES_USER:-polaris}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "${HOST_IP:-192.168.56.10}:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  polaris-bootstrap:
+    image: apache/polaris-admin-tool:${POLARIS_VERSION:-1.7.0}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment: &polaris-db-env
+      POLARIS_PERSISTENCE_TYPE: relational-jdbc
+      POLARIS_PERSISTENCE_RELATIONAL_JDBC_DATABASE_TYPE: postgresql
+      QUARKUS_DATASOURCE_DB_KIND: postgresql
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-polaris}
+      QUARKUS_DATASOURCE_USERNAME: ${POSTGRES_USER:-polaris}
+      QUARKUS_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+    command:
+      - bootstrap
+      - --realm=${POLARIS_REALM:-POLARIS}
+      - --credential=${POLARIS_REALM:-POLARIS},${POLARIS_ROOT_CLIENT_ID:-root},${POLARIS_ROOT_CLIENT_SECRET}
+    restart: "no"
+
+  polaris:
+    image: apache/polaris:${POLARIS_VERSION:-1.7.0}
+    depends_on:
+      polaris-bootstrap:
+        condition: service_completed_successfully
+    ports:
+      - "${HOST_IP:-192.168.56.10}:8181:8181"
+      - "${HOST_IP:-192.168.56.10}:8182:8182"
+    environment:
+      <<: *polaris-db-env
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+      polaris.realm-context.realms: ${POLARIS_REALM:-POLARIS}
+      quarkus.otel.sdk.disabled: "true"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8182/q/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  polaris-setup:
+    image: python:3.13-alpine
+    depends_on:
+      polaris:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    environment:
+      POLARIS_REALM: ${POLARIS_REALM:-POLARIS}
+      POLARIS_ROOT_CLIENT_ID: ${POLARIS_ROOT_CLIENT_ID:-root}
+      POLARIS_ROOT_CLIENT_SECRET: ${POLARIS_ROOT_CLIENT_SECRET}
+      POLARIS_CATALOG: ${POLARIS_CATALOG:-jsondoc_catalog}
+      MINIO_BUCKET: ${MINIO_BUCKET:-jsondocs}
+      HOSTNAME_FQDN: ${HOSTNAME_FQDN:-woko.labs.localhost.com}
+    volumes:
+      - ./polaris/setup.py:/setup.py:ro
+    command: ["python", "/setup.py"]
+    restart: "no"
+
+  trino:
+    image: trinodb/trino:${TRINO_VERSION:-483}
+    hostname: trino
+    depends_on:
+      minio:
+        condition: service_healthy
+      polaris-setup:
+        condition: service_completed_successfully
+    environment:
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      POLARIS_CLIENT_ID: ${POLARIS_ROOT_CLIENT_ID:-root}
+      POLARIS_CLIENT_SECRET: ${POLARIS_ROOT_CLIENT_SECRET}
+    volumes:
+      - ./trino/etc:/etc/trino:ro
+    ports:
+      - "${HOST_IP:-192.168.56.10}:8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/v1/info >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  app:
+    build: ./app
+    depends_on:
+      minio-init:
+        condition: service_completed_successfully
+      trino:
+        condition: service_healthy
+    environment:
+      MINIO_ENDPOINT: minio:9000
+      MINIO_PUBLIC_ENDPOINT: ${HOSTNAME_FQDN:-woko.labs.localhost.com}:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET: ${MINIO_BUCKET:-jsondocs}
+      TRINO_HOST: trino
+      TRINO_PORT: 8080
+    ports:
+      - "${HOST_IP:-192.168.56.10}:8501:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+volumes:
+  minio-data:
+  postgres-data:

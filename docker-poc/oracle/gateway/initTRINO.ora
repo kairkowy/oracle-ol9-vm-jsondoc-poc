@@ -1,0 +1,9 @@
+# Place in /home/oracle/app/oracle/dbhome/hs/admin on the Gateway host.
+HS_FDS_CONNECT_INFO=TrinoProd
+HS_FDS_SHAREABLE_NAME=/usr/lib64/libodbc.so.2
+# OL9 DG4ODBC/unixODBC validation: AL32UTF8 invoked SQLConnectW and
+# corrupted the DSN. Use the verified ANSI path for this lab.
+HS_LANGUAGE=AMERICAN_AMERICA.WE8ISO8859P1
+HS_FDS_TRACE_LEVEL=OFF
+HS_TRANSACTION_MODEL=READ_ONLY
+set ODBCINI=/etc/odbc.ini
