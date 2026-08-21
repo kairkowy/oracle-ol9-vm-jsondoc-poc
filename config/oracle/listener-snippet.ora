@@ -1,0 +1,14 @@
+LISTENER_DORIS =
+  (DESCRIPTION_LIST=
+    (DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=oracle.labs.localhost.com)(PORT=1522)))
+  )
+
+SID_LIST_LISTENER_DORIS =
+  (SID_LIST=
+    (SID_DESC=
+      (SID_NAME=DORIS)
+      (ORACLE_HOME=/home/oracle/app/oracle/dbhome)
+      (PROGRAM=dg4odbc)
+      (ENVS="ODBCINI=/etc/odbc.ini,ODBCSYSINI=/etc,LD_LIBRARY_PATH=/usr/lib64:/home/oracle/app/oracle/dbhome/lib")
+    )
+  )

@@ -1,0 +1,18 @@
+[Unit]
+Description=Apache Polaris REST Catalog
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=polaris
+Group=polaris
+EnvironmentFile=/etc/polaris/polaris.env
+WorkingDirectory=/opt/polaris
+ExecStart=/opt/polaris/bin/server
+Restart=on-failure
+RestartSec=10
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,19 @@
+[Unit]
+Description=Apache Doris FE
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=forking
+User=doris
+Group=doris
+LimitCORE=infinity
+LimitNOFILE=200000
+Restart=on-failure
+RestartSec=30
+KillMode=none
+ExecStart=/opt/doris/fe/bin/start_fe.sh --daemon
+ExecStop=/opt/doris/fe/bin/stop_fe.sh
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,7 @@
+*.env
+*.rpm
+*.tar.gz
+*.tgz
+*.log
+__pycache__/
+.venv/

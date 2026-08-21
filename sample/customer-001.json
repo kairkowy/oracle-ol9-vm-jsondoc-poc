@@ -1,0 +1,7 @@
+{
+  "id": "customer-001",
+  "type": "customer",
+  "name": "Woko Labs Customer",
+  "email": "customer001@example.com",
+  "active": true
+}
