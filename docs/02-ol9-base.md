@@ -1,6 +1,6 @@
 # 2. 공통 Oracle Linux 9 준비
 
-모든 VM에서 root로 수행합니다.
+VM1과 VM2에서 root로 수행합니다. Oracle은 기존 운영 절차를 따릅니다.
 
 ```sh
 dnf update -y
@@ -12,7 +12,9 @@ timedatectl set-timezone Asia/Seoul
 `inventory/hosts.example`을 `/etc/hosts`에 병합하거나 내부 DNS에 같은 레코드를 생성합니다. 파일 전체를 덮어쓰지 마십시오.
 
 ```sh
-hostnamectl set-hostname <해당-VM-FQDN>
+# 해당 VM에서 한 줄만 실행
+hostnamectl set-hostname storage.labs.localhost.com   # VM1에서 실행
+hostnamectl set-hostname compute.labs.localhost.com   # VM2에서 실행
 getent hosts minio.labs.localhost.com polaris.labs.localhost.com doris-fe.labs.localhost.com
 ```
 

@@ -3,7 +3,7 @@ import os
 import time
 import pymysql
 
-host = os.getenv("DORIS_HOST", "doris-fe.labs.localhost.com")
+host = os.getenv("DORIS_HOST", "127.0.0.1")
 app_user = os.getenv("DORIS_APP_USER", "jsondoc_app")
 password = os.environ["DORIS_APP_PASSWORD"]
 polaris_secret = os.environ["POLARIS_ROOT_CLIENT_SECRET"]

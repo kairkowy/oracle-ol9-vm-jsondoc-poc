@@ -1,7 +1,7 @@
 [Unit]
 Description=Apache Polaris REST Catalog
-Wants=network-online.target
-After=network-online.target
+Wants=network-online.target postgresql-17.service minio.service
+After=network-online.target postgresql-17.service minio.service
 
 [Service]
 Type=simple

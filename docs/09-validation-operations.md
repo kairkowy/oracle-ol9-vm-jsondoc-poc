@@ -5,20 +5,14 @@
 서비스 의존 순서대로 확인합니다.
 
 ```bash
-# PostgreSQL VM
+# VM1: storage/catalog 계층
 sudo systemctl status postgresql-17
-
-# MinIO VM
 curl -fsS http://127.0.0.1:9000/minio/health/live
-
-# Polaris VM
 curl -fsS http://127.0.0.1:8182/q/health/ready
 
-# Doris FE/BE VM
-sudo systemctl status doris-fe       # FE VM
-sudo systemctl status doris-be       # BE VM
-
-# App VM
+# VM2: compute/app 계층
+sudo systemctl status doris-fe
+sudo systemctl status doris-be
 curl -fsS http://127.0.0.1:8501/health
 ```
 
@@ -48,7 +42,7 @@ FROM customer_jsondoc_v;
 
 ## 시작/중지 순서
 
-시작은 `PostgreSQL → MinIO → Polaris → Doris FE → Doris BE → App`, 중지는 역순입니다. Oracle은 외부 기존 DB이므로 별도 운영 절차를 따릅니다. systemd의 자동 재시작은 단일 프로세스 장애만 처리하며 의존 서비스의 데이터 일관성을 대신하지 않습니다.
+시작은 VM1에서 `PostgreSQL → MinIO → Polaris`, 그 다음 VM2에서 `Doris FE → Doris BE → App` 순서입니다. 중지는 역순입니다. Oracle은 외부 기존 DB이므로 별도 운영 절차를 따릅니다. systemd unit의 `After/Wants`는 같은 VM 내부 순서만 보조하며, VM2 시작 전 VM1 health를 별도로 확인합니다.
 
 ## 백업 범위
 
@@ -63,11 +57,10 @@ PostgreSQL만 복구하거나 MinIO만 복구하면 catalog pointer와 Iceberg m
 
 | 계층 | POC | 운영 권고 출발점 |
 |---|---|---|
-| Doris | FE 1 + BE 1 | FE 3 + BE 3 이상, FQDN 등록, rack 분산 |
+| VM2 Doris | FE 1 + BE 1 + App 1 | FE 3 + BE 3 이상, App 2+, FQDN 등록, rack 분산 |
 | Polaris | 1 node | 2+ node, LB, 외부 secret manager |
-| PostgreSQL | 1 node | HA/backup/PITR |
-| MinIO | 1 node/1 disk | distributed erasure coding, 별도 장애 도메인 |
-| App | 1 node | 2+ node + TLS LB + 인증 |
+| VM1 PostgreSQL | 1 node | HA/backup/PITR 및 MinIO와 장애 도메인 분리 |
+| VM1 MinIO | 1 node/1 disk | distributed erasure coding, 별도 장애 도메인 |
 | Oracle Gateway | DB host 1개 | 별도 Gateway home/host 검토, 이중화와 접속 timeout |
 
 운영 전에는 모든 HTTP 구간을 TLS로 바꾸고 방화벽 source를 실제 호출 VM으로 제한하며 root/minioadmin/Polaris bootstrap 자격증명을 교체합니다.

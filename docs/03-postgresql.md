@@ -1,4 +1,4 @@
-# 3. PostgreSQL 17 VM
+# 3. VM1 PostgreSQL 17
 
 PostgreSQL은 Polaris 전용 영속 저장소입니다. JSON/Parquet 파일을 저장하지 않습니다.
 
@@ -15,15 +15,15 @@ systemctl enable --now postgresql-17
 `/var/lib/pgsql/17/data/postgresql.conf`:
 
 ```ini
-listen_addresses = '192.168.56.13'
+listen_addresses = '127.0.0.1'
 port = 5432
 password_encryption = 'scram-sha-256'
 ```
 
-`/var/lib/pgsql/17/data/pg_hba.conf`에 Polaris VM만 허용합니다.
+Polaris가 같은 VM에서 접속하므로 `/var/lib/pgsql/17/data/pg_hba.conf`에는 loopback만 허용합니다.
 
 ```text
-host    polaris    polaris    192.168.56.14/32    scram-sha-256
+host    polaris    polaris    127.0.0.1/32    scram-sha-256
 ```
 
 DB와 계정을 생성합니다. 템플릿의 비밀번호를 먼저 변경하십시오.
@@ -38,7 +38,7 @@ systemctl restart postgresql-17
 
 ```sh
 ss -ltnp | grep 5432
-psql 'host=192.168.56.13 port=5432 dbname=polaris user=polaris sslmode=prefer'
+psql 'host=127.0.0.1 port=5432 dbname=polaris user=polaris sslmode=prefer'
 ```
 
 POC에서도 `/var/lib/pgsql/17/data`를 정기 백업하고, Polaris upgrade 전에 DB snapshot을 만듭니다. Polaris relational-jdbc schema migration은 자동으로 수행된다고 가정하지 않습니다.

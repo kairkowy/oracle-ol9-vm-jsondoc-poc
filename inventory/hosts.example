@@ -1,8 +1,4 @@
-# Copy these entries to /etc/hosts on every POC VM if internal DNS is unavailable.
+# Copy these entries to /etc/hosts on Oracle and both POC VMs if internal DNS is unavailable.
 192.168.56.10 oracle.labs.localhost.com oracle
-192.168.56.11 app.labs.localhost.com app
-192.168.56.12 minio.labs.localhost.com minio
-192.168.56.13 postgres.labs.localhost.com postgres
-192.168.56.14 polaris.labs.localhost.com polaris
-192.168.56.15 doris-fe.labs.localhost.com doris-fe
-192.168.56.16 doris-be.labs.localhost.com doris-be
+192.168.56.11 storage.labs.localhost.com storage minio.labs.localhost.com minio polaris.labs.localhost.com polaris
+192.168.56.12 compute.labs.localhost.com compute doris-fe.labs.localhost.com doris-fe doris-be.labs.localhost.com doris-be app.labs.localhost.com app

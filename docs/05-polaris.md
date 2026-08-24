@@ -1,6 +1,8 @@
-# 5. Apache Polaris 1.7 VM
+# 5. VM1 Apache Polaris 1.7
 
 Polaris binary distribution과 Admin Tool은 같은 1.7.0 버전을 사용합니다. Java 21 이상이 필요합니다.
+
+Polaris와 PostgreSQL은 같은 VM이므로 JDBC URL은 `jdbc:postgresql://127.0.0.1:5432/polaris`를 사용합니다. PostgreSQL이 준비된 뒤 Polaris를 시작합니다.
 
 ```sh
 dnf install -y java-21-openjdk-headless
@@ -49,7 +51,7 @@ curl -fsS -X POST \
   http://polaris.labs.localhost.com:8181/api/catalog/v1/oauth/tokens | jq .
 ```
 
-Catalog 생성은 `scripts/create-polaris-catalog.py`를 Polaris VM에서 실행합니다. `endpoint`와 `endpointInternal` 모두 VM MinIO FQDN을 사용합니다.
+Catalog 생성은 `scripts/create-polaris-catalog.py`를 VM1에서 실행합니다. `endpoint`와 `endpointInternal` 모두 MinIO service FQDN을 사용합니다.
 
 ```sh
 POLARIS_ROOT_CLIENT_SECRET='<실제암호>' \

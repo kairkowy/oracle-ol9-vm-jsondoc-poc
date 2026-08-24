@@ -1,4 +1,4 @@
-# 4. MinIO VM
+# 4. VM1 MinIO
 
 POC parity를 위해 `RELEASE.2025-07-23T15-54-02Z` x86-64 RPM을 사용합니다. 공식 MinIO 배포처에서 RPM을 내려받아 checksum/signature를 검증한 후 설치합니다.
 
@@ -18,7 +18,7 @@ systemctl status minio
 curl -fsS http://minio.labs.localhost.com:9000/minio/health/live
 ```
 
-MinIO Client를 관리 VM 또는 MinIO VM에 설치하고 초기화합니다.
+MinIO Client를 관리 VM 또는 VM1에 설치하고 초기화합니다.
 
 ```sh
 install -m 0755 mc /usr/local/bin/mc
