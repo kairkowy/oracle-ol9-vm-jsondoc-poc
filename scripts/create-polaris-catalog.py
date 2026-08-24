@@ -5,13 +5,14 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-base = os.getenv("POLARIS_BASE_URL", "http://polaris.labs.localhost.com:8181")
+base = os.getenv("POLARIS_BASE_URL", "http://127.0.0.1:8181")
 realm = os.getenv("POLARIS_REALM", "POLARIS")
 client_id = os.getenv("POLARIS_ROOT_CLIENT_ID", "root")
 client_secret = os.environ["POLARIS_ROOT_CLIENT_SECRET"]
 catalog = os.getenv("POLARIS_CATALOG", "jsondoc_catalog")
 bucket = os.getenv("MINIO_BUCKET", "jsondocs")
-minio_endpoint = os.getenv("MINIO_ENDPOINT", "http://minio.labs.localhost.com:9000")
+minio_endpoint = os.getenv("MINIO_ENDPOINT", "http://10.0.27.145:9000")
+minio_endpoint_internal = os.getenv("MINIO_ENDPOINT_INTERNAL", "http://127.0.0.1:9000")
 
 
 def request(path, *, method="GET", data=None, token=None):
@@ -56,7 +57,7 @@ payload = {
             "storageType": "S3",
             "allowedLocations": [f"s3://{bucket}/warehouse"],
             "endpoint": minio_endpoint,
-            "endpointInternal": minio_endpoint,
+            "endpointInternal": minio_endpoint_internal,
             "pathStyleAccess": True,
             "stsUnavailable": True,
             "region": "us-east-1",

@@ -21,9 +21,9 @@ PostgreSQL은 Polaris의 catalog/RBAC/table pointer만 영속화합니다. JSON,
 
 | VM | 컴포넌트 | FQDN / IP | 권장 POC 사양 | 주요 포트 |
 |---|---|---:|---|---|
-| VM1 | MinIO + PostgreSQL + Polaris | `storage.labs.localhost.com` / `192.168.56.11` | 8 vCPU, 16 GB, 별도 data disk | 9000, 9001, 8181, 8182; 5432는 localhost만 |
-| VM2 | Doris FE + BE + App | `compute.labs.localhost.com` / `192.168.56.12` | 8~12 vCPU, 24 GB, 50 GB 이상 작업 disk | 8030, 9030, 8501; FE/BE 내부 포트 |
-| 외부 | Oracle 26ai + DG4ODBC | `oracle.labs.localhost.com` / `192.168.56.10` | 기존 환경 | 1521, 1522 |
+| VM1 | MinIO + PostgreSQL + Polaris | Private `10.0.27.145` / Public `141.148.12.16` | 8 vCPU, 16 GB, 별도 data disk | 9000, 9001, 8181, 8182; 5432는 localhost만 |
+| VM2 | Doris FE + BE + App | Private `10.0.121.203` / Public `129.153.132.242` | 8~12 vCPU, 24 GB, 50 GB 이상 작업 disk | 8030, 9030, 8501; FE/BE 내부 포트 |
+| 외부 | Oracle 26ai + DG4ODBC | 기존 Oracle 주소 | 기존 환경 | 1521, 1522 |
 
 이는 기능 POC 최소안입니다. VM1과 VM2가 각각 단일 장애점이므로 운영 설계에서는 FE 3대, BE 3대 이상, PostgreSQL HA, 다중 노드 MinIO 및 TLS/LB를 별도로 설계합니다.
 
@@ -39,7 +39,7 @@ PostgreSQL은 Polaris의 catalog/RBAC/table pointer만 영속화합니다. JSON,
 8. [Oracle DG4ODBC와 ORACLE_BIGDATA](docs/08-oracle.md)
 9. [통합 검증과 운영](docs/09-validation-operations.md)
 
-`inventory/hosts.example`과 `config/`의 템플릿에서 비밀번호와 설치 경로를 환경에 맞게 변경하십시오. 비밀번호 placeholder가 남아 있으면 서비스를 시작하지 마십시오.
+별도 hostname이나 `/etc/hosts` 등록은 사용하지 않습니다. `inventory/network-addresses.env.example`과 `config/`의 템플릿에서 IP, 비밀번호와 설치 경로를 환경에 맞게 확인하십시오. 비밀번호 placeholder가 남아 있으면 서비스를 시작하지 마십시오.
 
 ## 고정 버전과 설치 미디어
 

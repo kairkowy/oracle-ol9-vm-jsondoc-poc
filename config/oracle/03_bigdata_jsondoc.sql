@@ -1,5 +1,5 @@
 -- Replace with object_uri selected from JSONDOC_FILE_METADATA_V.
-DEFINE object_uri = 'http://minio.labs.localhost.com:9000/jsondocs/uploads/2026/08/21/0687e33ff87c-customer-001.json'
+DEFINE object_uri = 'http://141.148.12.16:9000/jsondocs/uploads/2026/08/21/0687e33ff87c-customer-001.json'
 
 BEGIN
   EXECUTE IMMEDIATE 'DROP TABLE selected_jsondoc_ext PURGE';

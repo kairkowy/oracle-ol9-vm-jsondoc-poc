@@ -14,6 +14,15 @@ curl -fsS http://127.0.0.1:8182/q/health/ready
 sudo systemctl status doris-fe
 sudo systemctl status doris-be
 curl -fsS http://127.0.0.1:8501/health
+curl -fsS http://10.0.27.145:9000/minio/health/live
+nc -vz 10.0.27.145 8181
+```
+
+Oracle host에서는 Public endpoint를 확인합니다.
+
+```bash
+nc -vz 129.153.132.242 9030
+curl -fsS http://141.148.12.16:9000/minio/health/live
 ```
 
 Doris에서 backend와 catalog를 확인합니다.

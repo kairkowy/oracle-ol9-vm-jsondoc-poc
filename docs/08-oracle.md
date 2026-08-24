@@ -1,6 +1,6 @@
 # Oracle 26ai: DG4ODBC와 ORACLE_BIGDATA
 
-대상: 기존 Oracle Database 26ai가 있는 `oracle.labs.localhost.com`. 예시는 `ORACLE_HOME=/home/oracle/app/oracle/dbhome`, PDB `ORCLPDB`, 애플리케이션 사용자 `LAKE`입니다.
+대상은 기존 Oracle Database 26ai/Gateway host입니다. 예시는 `ORACLE_HOME=/home/oracle/app/oracle/dbhome`, PDB `ORCLPDB`, 애플리케이션 사용자 `LAKE`입니다. Gateway listener는 같은 host의 `127.0.0.1:1522`, Doris DSN은 VM2 Public `129.153.132.242:9030`을 사용합니다.
 
 ## 1. Gateway와 ODBC 설치
 
@@ -64,7 +64,7 @@ FROM "jsondoc_gateway"."file_metadata"@doris_link;
 
 ## 5. MinIO network ACL과 JSON 읽기
 
-SYS로 `ORCLPDB`에 접속하여 `config/oracle/02_network_acl.sql`을 실행합니다. 같은 ACE가 이미 있으면 중복 추가하지 말고 다음 조회로 먼저 확인합니다.
+SYS로 `ORCLPDB`에 접속하여 `config/oracle/02_network_acl.sql`을 실행합니다. ACL 대상은 VM1 Public IP `141.148.12.16`, 포트는 9000입니다. IP literal에는 `resolve` privilege나 `private_target`이 필요하지 않습니다. 같은 ACE가 이미 있으면 중복 추가하지 말고 다음 조회로 먼저 확인합니다.
 
 ```sql
 SELECT host, lower_port, upper_port, ace_order, principal, privilege
@@ -77,8 +77,7 @@ WHERE principal = 'LAKE';
 ## 알려진 오류
 
 - `ORA-28500`, trace의 SQLSTATE가 `I` 하나 및 메시지 `[` 하나: 3.1.12 wide-character 접속 문제 가능성이 높음. 3.2.8과 `HS_LANGUAGE` 확인.
-- `ORA-24266 expected private got public`: private 주소를 해석하는 ACL에 `private_target => TRUE` 누락.
-- `ORA-24247`: `LAKE`의 `resolve`, `http`, `connect`와 9000 포트 범위 확인.
+- `ORA-24247`: `141.148.12.16`에 대한 `LAKE`의 `http`, `connect`와 9000 포트 범위 확인.
 - DB link는 연결되지만 테이블이 안 보임: Doris external view는 `jsondoc_gateway.file_metadata`; Oracle에서는 `"jsondoc_gateway"."file_metadata"@doris_link` 사용.
 
 공식 문서: [Oracle Database Gateway for ODBC 설치](https://docs.oracle.com/en/database/oracle/oracle-database/26/otgis/install-odbc-gateway.html), [DBMS_NETWORK_ACL_ADMIN](https://docs.oracle.com/en/database/oracle/oracle-database/26/arpls/DBMS_NETWORK_ACL_ADMIN.html).

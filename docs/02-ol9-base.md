@@ -9,13 +9,14 @@ systemctl enable --now chronyd
 timedatectl set-timezone Asia/Seoul
 ```
 
-`inventory/hosts.example`을 `/etc/hosts`에 병합하거나 내부 DNS에 같은 레코드를 생성합니다. 파일 전체를 덮어쓰지 마십시오.
+`inventory/network-addresses.env.example`에 정의된 Public/Private IP를 기준으로 구성합니다. 서비스 hostname이나 `/etc/hosts` alias는 추가하지 않습니다.
+
+별도 서비스 hostname은 설정하지 않습니다. 각 VM에서 VNIC Private IP를 확인합니다.
 
 ```sh
-# 해당 VM에서 한 줄만 실행
-hostnamectl set-hostname storage.labs.localhost.com   # VM1에서 실행
-hostnamectl set-hostname compute.labs.localhost.com   # VM2에서 실행
-getent hosts minio.labs.localhost.com polaris.labs.localhost.com doris-fe.labs.localhost.com
+ip -4 address show
+ip route
+# VM1: 10.0.27.145, VM2: 10.0.121.203 확인
 ```
 
 공통 운영 원칙:

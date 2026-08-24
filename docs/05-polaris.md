@@ -40,7 +40,7 @@ journalctl -u polaris -f
 검증:
 
 ```sh
-curl -fsS http://polaris.labs.localhost.com:8182/q/health
+curl -fsS http://127.0.0.1:8182/q/health
 curl -fsS -X POST \
   -H 'Polaris-Realm: POLARIS' \
   -H 'Content-Type: application/x-www-form-urlencoded' \
@@ -48,12 +48,15 @@ curl -fsS -X POST \
   --data-urlencode client_id=root \
   --data-urlencode client_secret='<실제암호>' \
   --data-urlencode scope='PRINCIPAL_ROLE:ALL' \
-  http://polaris.labs.localhost.com:8181/api/catalog/v1/oauth/tokens | jq .
+  http://127.0.0.1:8181/api/catalog/v1/oauth/tokens | jq .
 ```
 
-Catalog 생성은 `scripts/create-polaris-catalog.py`를 VM1에서 실행합니다. `endpoint`와 `endpointInternal` 모두 MinIO service FQDN을 사용합니다.
+Catalog 생성은 `scripts/create-polaris-catalog.py`를 VM1에서 실행합니다. VM2 client가 받을 `endpoint`는 VM1 Private IP, VM1 내부 접근용 `endpointInternal`은 localhost로 분리합니다.
 
 ```sh
+POLARIS_BASE_URL='http://127.0.0.1:8181' \
+MINIO_ENDPOINT='http://10.0.27.145:9000' \
+MINIO_ENDPOINT_INTERNAL='http://127.0.0.1:9000' \
 POLARIS_ROOT_CLIENT_SECRET='<실제암호>' \
 MINIO_ROOT_PASSWORD='<실제암호>' \
 python3 scripts/create-polaris-catalog.py

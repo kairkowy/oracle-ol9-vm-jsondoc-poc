@@ -15,14 +15,14 @@ RPM이 만든 service의 `User`, `EnvironmentFile`, `ExecStart`가 실제 설치
 ```sh
 systemctl cat minio
 systemctl status minio
-curl -fsS http://minio.labs.localhost.com:9000/minio/health/live
+curl -fsS http://127.0.0.1:9000/minio/health/live
 ```
 
 MinIO Client를 관리 VM 또는 VM1에 설치하고 초기화합니다.
 
 ```sh
 install -m 0755 mc /usr/local/bin/mc
-mc alias set poc http://minio.labs.localhost.com:9000 minioadmin '<실제암호>'
+mc alias set poc http://127.0.0.1:9000 minioadmin '<실제암호>'
 mc mb --ignore-existing poc/jsondocs
 ```
 
@@ -44,13 +44,13 @@ mc anonymous set none poc/jsondocs
 ```sh
 mc cp samples/customer-001.json poc/jsondocs/samples/customer-001.json
 mc stat poc/jsondocs/samples/customer-001.json
-curl -f http://minio.labs.localhost.com:9000/jsondocs/samples/customer-001.json
+curl -f http://141.148.12.16:9000/jsondocs/samples/customer-001.json
 ```
 
 Doris catalog에서는 MinIO virtual-host 방식이 아니라 반드시 다음 값을 사용합니다.
 
 ```text
-s3.endpoint=http://minio.labs.localhost.com:9000
+s3.endpoint=http://10.0.27.145:9000
 use_path_style=true
 ```
 
