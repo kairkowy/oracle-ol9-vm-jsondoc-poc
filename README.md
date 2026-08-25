@@ -29,6 +29,8 @@ PostgreSQL은 Polaris의 catalog/RBAC/table pointer만 영속화합니다. JSON,
 
 ## 설치 순서
 
+처음부터 끝까지 한 문서로 진행하려면 [단일 설치 가이드](oracle_dg4odbc_dosis.md)를 사용합니다. 아래 문서는 구성요소별 상세 참고용으로 유지합니다.
+
 1. [토폴로지와 방화벽](docs/01-topology-network.md)
 2. [공통 OL9 준비](docs/02-ol9-base.md)
 3. VM1: [PostgreSQL 17](docs/03-postgresql.md)
