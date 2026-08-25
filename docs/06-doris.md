@@ -5,9 +5,13 @@ Apache Doris 4.0.1 FE와 BE를 VM2 Private IP `10.0.121.203` 한 VM에서 실행
 ## 설치
 
 ```sh
-sudo dnf install -y java-17-openjdk-headless
+sudo dnf install -y java-17-openjdk-headless mariadb
 sudo useradd --system --home-dir /opt/doris --shell /sbin/nologin doris
 ```
+
+`mariadb` 패키지는 Doris FE의 MySQL protocol 점검과 BE 등록에 사용하는
+`mysql`, `mysqladmin` client를 제공합니다. Doris binary 자체에는 이 client가
+포함되지 않습니다.
 
 `bin-x64` 배포본은 AVX2 CPU용입니다. 먼저 `grep -m1 -o avx2 /proc/cpuinfo`로 확인합니다. 출력이 없으면 아래 URL의 `bin-x64` 대신 `bin-x64-noavx2` 배포본을 사용해야 합니다. 공식 배포처에서 binary와 SHA-512을 내려받아 검증한 뒤 `/opt`에 풉니다.
 
