@@ -9,7 +9,24 @@ sudo dnf install -y java-17-openjdk-headless
 sudo useradd --system --home-dir /opt/doris --shell /sbin/nologin doris
 ```
 
-배포본의 `fe/`, `be/`를 각각 `/opt/doris/fe`, `/opt/doris/be`에 설치합니다.
+`bin-x64` 배포본은 AVX2 CPU용입니다. 먼저 `grep -m1 -o avx2 /proc/cpuinfo`로 확인합니다. 출력이 없으면 아래 URL의 `bin-x64` 대신 `bin-x64-noavx2` 배포본을 사용해야 합니다. 공식 배포처에서 binary와 SHA-512을 내려받아 검증한 뒤 `/opt`에 풉니다.
+
+```sh
+DORIS_VERSION=4.0.1
+curl -fLO https://apache-doris-releases.oss-accelerate.aliyuncs.com/apache-doris-${DORIS_VERSION}-bin-x64.tar.gz
+curl -fLO https://apache-doris-releases.oss-accelerate.aliyuncs.com/apache-doris-${DORIS_VERSION}-bin-x64.tar.gz.sha512
+expected=$(awk '{print $1}' apache-doris-${DORIS_VERSION}-bin-x64.tar.gz.sha512)
+echo "${expected}  apache-doris-${DORIS_VERSION}-bin-x64.tar.gz" | sha512sum --check -
+
+sudo tar -xzf apache-doris-${DORIS_VERSION}-bin-x64.tar.gz -C /opt
+# Archive directory: /opt/apache-doris-4.0.1-bin-x64
+sudo ln -sfnT /opt/apache-doris-${DORIS_VERSION}-bin-x64 /opt/doris
+sudo chown -R doris:doris /opt/apache-doris-${DORIS_VERSION}-bin-x64
+sudo restorecon -RFv /opt/apache-doris-${DORIS_VERSION}-bin-x64
+ls -ld /opt/doris /opt/doris/fe/conf /opt/doris/be/conf
+```
+
+`/opt/doris`는 실제 archive directory가 아니라 위에서 만든 symlink입니다. 이후 문서의 `/opt/doris/fe`와 `/opt/doris/be` 경로는 각각 배포본의 `fe/`, `be/`를 가리킵니다.
 
 ```sh
 sudo install -d -o doris -g doris -m 0750 /var/lib/doris/fe-meta /var/lib/doris/be-storage
