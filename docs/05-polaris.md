@@ -74,13 +74,25 @@ PostgreSQL schema로 확인합니다.
 sudo -u postgres psql -d polaris -c '\\dt polaris_schema.*'
 ```
 
-Catalog 생성은 `scripts/create-polaris-catalog.py`를 VM1에서 실행합니다. VM2 client가 받을 `endpoint`는 VM1 Private IP, VM1 내부 접근용 `endpointInternal`은 localhost로 분리합니다.
+Catalog 생성은 `scripts/create-polaris-catalog.py`를 **VM1에서 `opc` 관리 계정으로** 실행합니다. 먼저 `jsondocs` bucket이 존재하고 Polaris가 `UP`인지 확인합니다. VM2 client가 REST catalog에서 받을 `endpoint`는 VM1 Private IP, Polaris가 VM1 내부에서 사용할 `endpointInternal`은 localhost로 분리합니다.
+
+```sh
+curl -fsS http://127.0.0.1:8182/q/health
+mc ls poc/jsondocs
+```
+
+`POLARIS_ROOT_CLIENT_SECRET`은 앞선 `admin bootstrap`에서 root principal에 지정한 값과 정확히 같아야 합니다. `MINIO_ROOT_PASSWORD`는 이 Python 스크립트가 직접 읽지 않습니다. MinIO credential은 이미 `/etc/polaris/polaris.env`의 `AWS_ACCESS_KEY_ID`와 `AWS_SECRET_ACCESS_KEY`로 Polaris 서비스에 전달돼 있어야 합니다.
 
 ```sh
 POLARIS_BASE_URL='http://127.0.0.1:8181' \
+POLARIS_REALM='POLARIS' \
+POLARIS_ROOT_CLIENT_ID='root' \
+POLARIS_CATALOG='jsondoc_catalog' \
+MINIO_BUCKET='jsondocs' \
 MINIO_ENDPOINT='http://10.0.27.145:9000' \
 MINIO_ENDPOINT_INTERNAL='http://127.0.0.1:9000' \
 POLARIS_ROOT_CLIENT_SECRET='<실제암호>' \
-MINIO_ROOT_PASSWORD='<실제암호>' \
 python3 scripts/create-polaris-catalog.py
 ```
+
+성공 시 `Created jsondoc_catalog: HTTP 201` 또는 이미 생성된 경우 `Catalog jsondoc_catalog already exists`가 출력됩니다. `401`/`403`이면 root client secret 또는 bootstrap 상태를, `Connection refused`이면 Polaris service 상태를 확인합니다.
