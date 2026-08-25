@@ -33,11 +33,21 @@ ls -l /home/oracle/app/gateway/26ai/dg4odbc/bin/dg4odbc
 ```
 
 ```bash
-sudo dnf install -y unixODBC mariadb-connector-odbc
-file /usr/lib64/libodbc.so.2 /usr/lib64/libmaodbc.so
+sudo dnf install -y unixODBC
+file /usr/lib64/libodbc.so.2
 ```
 
-OL9 AppStream의 3.1.12에서 Gateway `SQLConnectW` 문자열이 손상됐던 검증 이력이 있으므로 이 POC 기준은 MariaDB Connector/ODBC 3.2.8입니다. 공식 RPM과 공개키를 검증하고 내부 저장소를 통해 설치하십시오. `rpmkeys --checksig --verbose package.rpm`에서 header와 payload digest가 `OK`, signature가 `OK`여야 합니다. `NOKEY`는 파일 손상이 아니라 키 미등록 상태이므로 키 출처와 fingerprint 확인 후 `rpm --import`합니다.
+OL9 AppStream의 3.1.12에서 Gateway `SQLConnectW` 문자열이 손상됐던 검증 이력이 있으므로 이 POC 기준은 MariaDB Connector/ODBC 3.2.8입니다. Oracle Software Delivery Cloud가 아니라 [MariaDB Connector/ODBC 3.2.8 공식 파일 목록](https://dlm.mariadb.com/browse/odbc_connector/3.2.8/)에서 `mariadb-connector-odbc-3.2.8-1.el9.x86_64.rpm`을 받아 내부 저장소 또는 서버의 staging 경로에 둡니다. 기존 3.1.12를 그대로 사용하지 마십시오.
+
+```bash
+cd /home/oracle/stage
+rpmkeys --checksig --verbose mariadb-connector-odbc-3.2.8-1.el9.x86_64.rpm
+sudo dnf install -y ./mariadb-connector-odbc-3.2.8-1.el9.x86_64.rpm
+rpm -q mariadb-connector-odbc
+file /usr/lib64/libmaodbc.so
+```
+
+`rpmkeys --checksig --verbose`에서 header와 payload digest가 `OK`, signature가 `OK`여야 합니다. `NOKEY`는 파일 손상이 아니라 키 미등록 상태이므로 키 출처와 fingerprint 확인 후 `rpm --import`합니다.
 
 ## 2. unixODBC 수동 등록
 
@@ -46,7 +56,29 @@ OL9 AppStream의 3.1.12에서 Gateway `SQLConnectW` 문자열이 손상됐던 �
 - `config/oracle/odbcinst.ini` → `/etc/odbcinst.ini`
 - `config/oracle/odbc.ini` → `/etc/odbc.ini`
 
-DSN의 `PASSWORD=CHANGE_ME`를 Doris 계정 비밀번호로 바꾸고 권한을 제한합니다.
+DSN의 `PASSWORD=CHANGE_ME`를 Doris 계정 비밀번호로 바꾸고 권한을 제한합니다. 이 POC에서는 `/etc/odbcinst.ini`에 다음 드라이버 section, `/etc/odbc.ini`에 `DorisProd` section을 추가합니다.
+
+```ini
+; /etc/odbcinst.ini
+[MariaDB ODBC 3.2 Driver]
+Description=64-bit MariaDB Connector/ODBC
+Driver=/usr/lib64/libmaodbc.so
+Threading=0
+UsageCount=1
+```
+
+```ini
+; /etc/odbc.ini
+[DorisProd]
+Description=Apache Doris JSONDoc Lakehouse
+Driver=MariaDB ODBC 3.2 Driver
+SERVER=129.153.132.242
+PORT=9030
+USER=jsondoc_app
+PASSWORD=CHANGE_ME
+DATABASE=jsondoc_gateway
+CHARSET=utf8mb4
+```
 
 ```bash
 sudo chmod 600 /etc/odbc.ini
