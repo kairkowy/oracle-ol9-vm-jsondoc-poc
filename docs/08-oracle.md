@@ -56,7 +56,7 @@ file /usr/lib64/libmaodbc.so
 - `config/oracle/odbcinst.ini` → `/etc/odbcinst.ini`
 - `config/oracle/odbc.ini` → `/etc/odbc.ini`
 
-DSN의 `PASSWORD=CHANGE_ME`를 Doris 계정 비밀번호로 바꾸고 권한을 제한합니다. 이 POC에서는 `/etc/odbcinst.ini`에 다음 드라이버 section, `/etc/odbc.ini`에 `DorisProd` section을 추가합니다.
+DSN의 `PASSWORD=CHANGE_ME`를 Doris 계정 비밀번호로 바꾸고 권한을 제한합니다. 단, Gateway 프로세스는 `oracle` 사용자로 실행되므로 `/etc/odbc.ini`은 root만 읽는 `0600`으로 두면 안 됩니다. root가 소유하고 Oracle 소프트웨어 그룹에는 읽기 권한을 부여합니다. 이 POC에서는 `/etc/odbcinst.ini`에 다음 드라이버 section, `/etc/odbc.ini`에 `DorisProd` section을 추가합니다.
 
 ```ini
 ; /etc/odbcinst.ini
@@ -81,7 +81,9 @@ CHARSET=utf8mb4
 ```
 
 ```bash
-sudo chmod 600 /etc/odbc.ini
+ORACLE_GROUP=$(id -gn)
+sudo chown root:"${ORACLE_GROUP}" /etc/odbc.ini
+sudo chmod 640 /etc/odbc.ini
 odbcinst -j
 odbcinst -q -d -n 'MariaDB ODBC 3.2 Driver'
 odbcinst -q -s -n DorisProd
