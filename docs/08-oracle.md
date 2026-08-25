@@ -96,6 +96,23 @@ iusql -v DorisProd jsondoc_app '실제비밀번호'
 
 Oracle 소유자로 Gateway Home을 지정한 뒤 다음 템플릿을 직접 반영합니다. DB 접속 및 `sqlplus` 작업 시에는 기존 `DB_ORACLE_HOME=/home/oracle/app/db26`을 계속 사용합니다.
 
+### DB Home과 Gateway Home을 섞지 않는 방법
+
+두 Home의 역할을 다음처럼 고정합니다. Gateway listener의 `SID_DESC`에 있는 `ORACLE_HOME`과 `LD_LIBRARY_PATH`도 반드시 Gateway Home이어야 합니다. 이전 예제의 `/home/oracle/app/oracle/dbhome` 경로가 남아 있으면 `TNS-01201`로 `dg4odbc`를 찾지 못합니다.
+
+| 작업 | 사용할 Home |
+|---|---|
+| `sqlplus`, PDB, DB link DDL | `DB_ORACLE_HOME=/home/oracle/app/db26` |
+| `dg4odbc`, `initDORIS.ora`, `LISTENER_DORIS`, `tnsping DORIS_GATEWAY` | `GATEWAY_HOME=/home/oracle/app/gateway/26ai/dg4odbc` |
+
+```bash
+export DB_ORACLE_HOME=/home/oracle/app/db26
+export GATEWAY_HOME=/home/oracle/app/gateway/26ai/dg4odbc
+export ORACLE_HOME="$GATEWAY_HOME"
+export TNS_ADMIN="$GATEWAY_HOME/network/admin"
+export PATH="$ORACLE_HOME/bin:$PATH"
+```
+
 1. `config/oracle/initDORIS.ora` → `$ORACLE_HOME/hs/admin/initDORIS.ora`
 2. `config/oracle/listener-snippet.ora` → `$ORACLE_HOME/network/admin/listener.ora`에 병합
 3. `config/oracle/tnsnames-snippet.ora` → `$ORACLE_HOME/network/admin/tnsnames.ora`에 병합
