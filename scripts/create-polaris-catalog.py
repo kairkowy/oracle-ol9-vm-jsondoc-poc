@@ -11,7 +11,7 @@ client_id = os.getenv("POLARIS_ROOT_CLIENT_ID", "root")
 client_secret = os.environ["POLARIS_ROOT_CLIENT_SECRET"]
 catalog = os.getenv("POLARIS_CATALOG", "jsondoc_catalog")
 bucket = os.getenv("MINIO_BUCKET", "jsondocs")
-minio_endpoint = os.getenv("MINIO_ENDPOINT", "http://10.0.27.145:9000")
+minio_endpoint = os.getenv("MINIO_ENDPOINT", "http://10.0.121.203:9000")
 minio_endpoint_internal = os.getenv("MINIO_ENDPOINT_INTERNAL", "http://127.0.0.1:9000")
 
 

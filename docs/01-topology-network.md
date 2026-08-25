@@ -4,12 +4,12 @@
 
 ```text
 VM1 storage/catalog
-  Private: 10.0.27.145
+  Private: 10.0.121.203
   Public : 141.148.12.16
   MinIO + PostgreSQL + Polaris
 
 VM2 compute/app
-  Private: 10.0.121.203
+  Private: 10.0.27.145
   Public : 129.153.132.242
   Doris FE + Doris BE + JSONDoc App
 
@@ -27,17 +27,17 @@ VM 내부 통신은 `127.0.0.1`, VM1↔VM2는 Private IP, Oracle·관리자 외�
 | 사용자/reverse proxy | VM2 App | `129.153.132.242:8501` | JSONDoc UI/API |
 | Oracle, 관리자 | VM2 Doris FE | `129.153.132.242:9030` | MySQL/ODBC SQL |
 | VM2 App | VM2 Doris FE | `127.0.0.1:9030` | metadata SQL |
-| VM2 Doris FE | VM2 Doris BE | `10.0.121.203:9050` 및 내부 포트 | heartbeat/query/data |
-| VM2 App, Doris BE | VM1 MinIO | `10.0.27.145:9000` | S3 object API |
+| VM2 Doris FE | VM2 Doris BE | `10.0.27.145:9050` 및 내부 포트 | heartbeat/query/data |
+| VM2 App, Doris BE | VM1 MinIO | `10.0.121.203:9000` | S3 object API |
 | Oracle | VM1 MinIO | `141.148.12.16:9000` | ORACLE_BIGDATA HTTP |
-| VM2 Doris | VM1 Polaris | `10.0.27.145:8181` | Iceberg REST/OAuth2 |
+| VM2 Doris | VM1 Polaris | `10.0.121.203:8181` | Iceberg REST/OAuth2 |
 | VM1 Polaris | VM1 PostgreSQL | `127.0.0.1:5432` | relational-jdbc |
 | VM1 Polaris | VM1 MinIO | `127.0.0.1:9000` | internal object access |
 
 OCI NSG/security list와 OL9 firewalld를 모두 제한합니다.
 
 - VM1 Public `9000`: Oracle source Public IP만 허용
-- VM1 Private `9000`, `8181`: VM2 Private `10.0.121.203/32`만 허용
+- VM1 Private `9000`, `8181`: VM2 Private `10.0.27.145/32`만 허용
 - VM1 `9001`, `8182`: 관리자 source IP만 허용
 - VM1 `5432`: localhost only, 외부 개방 금지
 - VM2 Public `9030`: Oracle과 관리자 source IP만 허용
@@ -48,9 +48,9 @@ VM1의 Private endpoint 예시:
 
 ```sh
 sudo firewall-cmd --permanent \
-  --add-rich-rule='rule family=ipv4 source address=10.0.121.203/32 port port=9000 protocol=tcp accept'
+  --add-rich-rule='rule family=ipv4 source address=10.0.27.145/32 port port=9000 protocol=tcp accept'
 sudo firewall-cmd --permanent \
-  --add-rich-rule='rule family=ipv4 source address=10.0.121.203/32 port port=8181 protocol=tcp accept'
+  --add-rich-rule='rule family=ipv4 source address=10.0.27.145/32 port port=8181 protocol=tcp accept'
 sudo firewall-cmd --reload
 ```
 

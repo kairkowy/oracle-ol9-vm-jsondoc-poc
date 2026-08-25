@@ -1,6 +1,6 @@
 # 6. VM2 Apache Doris FE + BE
 
-Apache Doris 4.0.1 FE와 BE를 VM2 Private IP `10.0.121.203` 한 VM에서 실행합니다. FE는 SQL 접속·계획을, BE는 Iceberg scan과 INSERT 실행을 담당하므로 둘 다 필요합니다. 업무 데이터의 source of truth는 VM1 MinIO이며 BE disk는 작업·cache 용도로 사용합니다.
+Apache Doris 4.0.1 FE와 BE를 VM2 Private IP `10.0.27.145` 한 VM에서 실행합니다. FE는 SQL 접속·계획을, BE는 Iceberg scan과 INSERT 실행을 담당하므로 둘 다 필요합니다. 업무 데이터의 source of truth는 VM1 MinIO이며 BE disk는 작업·cache 용도로 사용합니다.
 
 ## 설치
 
@@ -84,7 +84,7 @@ FE의 9030 응답을 확인하고 같은 VM의 BE를 시작·등록합니다.
 mysqladmin -h127.0.0.1 -P9030 -uroot ping
 sudo systemctl enable --now doris-be
 mysql -h127.0.0.1 -P9030 -uroot \
-  -e "ALTER SYSTEM ADD BACKEND '10.0.121.203:9050'"
+  -e "ALTER SYSTEM ADD BACKEND '10.0.27.145:9050'"
 mysql -h127.0.0.1 -P9030 -uroot -e 'SHOW BACKENDS\G'
 ```
 
@@ -105,8 +105,8 @@ MINIO_ROOT_PASSWORD='<실제암호>' \
 VM1의 두 service endpoint가 catalog에 들어가야 합니다.
 
 ```text
-iceberg.rest.uri=http://10.0.27.145:8181/api/catalog
-s3.endpoint=http://10.0.27.145:9000
+iceberg.rest.uri=http://10.0.121.203:8181/api/catalog
+s3.endpoint=http://10.0.121.203:9000
 use_path_style=true
 ```
 
@@ -119,4 +119,4 @@ mysql -h127.0.0.1 -P9030 -uroot \
 
 ## VM2 자원 배분
 
-24 GB RAM 기준으로 BE 12~14 GB, FE heap 4 GB, App 1~2 GB, 나머지를 OS/cache에 남기는 것을 출발점으로 합니다. `/var/lib/doris/fe-meta`는 영구 보존하고 `/var/lib/doris/be-storage`에는 50 GB 이상의 작업 공간을 준비합니다. `priority_networks=10.0.121.203/32`로 FE/BE가 Public NAT IP가 아닌 VNIC Private IP를 advertise하게 합니다. 메모리 제한값은 실제 부하 시험 후 조정하십시오.
+24 GB RAM 기준으로 BE 12~14 GB, FE heap 4 GB, App 1~2 GB, 나머지를 OS/cache에 남기는 것을 출발점으로 합니다. `/var/lib/doris/fe-meta`는 영구 보존하고 `/var/lib/doris/be-storage`에는 50 GB 이상의 작업 공간을 준비합니다. `priority_networks=10.0.27.145/32`로 FE/BE가 Public NAT IP가 아닌 VNIC Private IP를 advertise하게 합니다. 메모리 제한값은 실제 부하 시험 후 조정하십시오.

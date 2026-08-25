@@ -82,7 +82,7 @@ NSG/Security List와 OS firewall에서 TCP 9000을 필요한 source CIDR에만
 Doris catalog에서는 MinIO virtual-host 방식이 아니라 반드시 다음 값을 사용합니다.
 
 ```text
-s3.endpoint=http://10.0.27.145:9000
+s3.endpoint=http://10.0.121.203:9000
 use_path_style=true
 ```
 

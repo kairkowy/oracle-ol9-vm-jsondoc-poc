@@ -1,6 +1,6 @@
 # 7. VM2 JSONDoc 앱
 
-대상: VM2 Private `10.0.121.203`, Public `129.153.132.242`. 앱은 JSON 원본을 VM1 Private `10.0.27.145:9000`에 올리고 같은 요청에서 localhost Doris FE의 Iceberg 테이블에 메타정보를 기록합니다. Oracle용 `object_uri`에는 VM1 Public `141.148.12.16:9000`을 기록합니다. 두 번째 단계가 실패하면 방금 올린 MinIO 객체를 삭제합니다.
+대상: VM2 Private `10.0.27.145`, Public `129.153.132.242`. 앱은 JSON 원본을 VM1 Private `10.0.121.203:9000`에 올리고 같은 요청에서 localhost Doris FE의 Iceberg 테이블에 메타정보를 기록합니다. Oracle용 `object_uri`에는 VM1 Public `141.148.12.16:9000`을 기록합니다. 두 번째 단계가 실패하면 방금 올린 MinIO 객체를 삭제합니다.
 
 ## 설치
 
@@ -34,7 +34,7 @@ curl -fsS http://127.0.0.1:8501/health
 
 ```bash
 sudo journalctl -u jsondoc-app -n 200 --no-pager
-curl -I http://10.0.27.145:9000/minio/health/live
+curl -I http://10.0.121.203:9000/minio/health/live
 ```
 
 Doris BE가 MinIO에 접근하지 못하면 FE의 catalog에서 `use_path_style=true`인지 확인합니다. `s3.use_path_style`은 이 검증 환경에서 동작하지 않았습니다.

@@ -21,8 +21,8 @@ PostgreSQL은 Polaris의 catalog/RBAC/table pointer만 영속화합니다. JSON,
 
 | VM | 컴포넌트 | FQDN / IP | 권장 POC 사양 | 주요 포트 |
 |---|---|---:|---|---|
-| VM1 | MinIO + PostgreSQL + Polaris | Private `10.0.27.145` / Public `141.148.12.16` | 8 vCPU, 16 GB, 별도 data disk | 9000, 9001, 8181, 8182; 5432는 localhost만 |
-| VM2 | Doris FE + BE + App | Private `10.0.121.203` / Public `129.153.132.242` | 8~12 vCPU, 24 GB, 50 GB 이상 작업 disk | 8030, 9030, 8501; FE/BE 내부 포트 |
+| VM1 | MinIO + PostgreSQL + Polaris | Private `10.0.121.203` / Public `141.148.12.16` | 8 vCPU, 16 GB, 별도 data disk | 9000, 9001, 8181, 8182; 5432는 localhost만 |
+| VM2 | Doris FE + BE + App | Private `10.0.27.145` / Public `129.153.132.242` | 8~12 vCPU, 24 GB, 50 GB 이상 작업 disk | 8030, 9030, 8501; FE/BE 내부 포트 |
 | 외부 | Oracle 26ai + DG4ODBC | 기존 Oracle 주소 | 기존 환경 | 1521, 1522 |
 
 이는 기능 POC 최소안입니다. VM1과 VM2가 각각 단일 장애점이므로 운영 설계에서는 FE 3대, BE 3대 이상, PostgreSQL HA, 다중 노드 MinIO 및 TLS/LB를 별도로 설계합니다.

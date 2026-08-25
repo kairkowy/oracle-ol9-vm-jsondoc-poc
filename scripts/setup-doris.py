@@ -27,22 +27,22 @@ for attempt in range(60):
 with conn.cursor() as cur:
     cur.execute("SHOW BACKENDS")
     backend_hosts = {str(row[1]) for row in cur.fetchall()}
-    if "10.0.121.203" not in backend_hosts:
-        cur.execute("ALTER SYSTEM ADD BACKEND '10.0.121.203:9050'")
+    if "10.0.27.145" not in backend_hosts:
+        cur.execute("ALTER SYSTEM ADD BACKEND '10.0.27.145:9050'")
 
     cur.execute("SHOW CATALOGS")
     catalogs = {str(row[0]) for row in cur.fetchall()}
     if "polaris_iceberg" not in catalogs:
         cur.execute(f"""CREATE CATALOG `polaris_iceberg` PROPERTIES (
       'type'='iceberg', 'iceberg.catalog.type'='rest',
-      'iceberg.rest.uri'='http://10.0.27.145:8181/api/catalog',
+      'iceberg.rest.uri'='http://10.0.121.203:8181/api/catalog',
       'warehouse'='jsondoc_catalog',
       'iceberg.rest.security.type'='oauth2',
       'iceberg.rest.oauth2.credential'={q('root:' + polaris_secret)},
-      'iceberg.rest.oauth2.server-uri'='http://10.0.27.145:8181/api/catalog/v1/oauth/tokens',
+      'iceberg.rest.oauth2.server-uri'='http://10.0.121.203:8181/api/catalog/v1/oauth/tokens',
       'iceberg.rest.oauth2.scope'='PRINCIPAL_ROLE:ALL',
       'iceberg.rest.vended-credentials-enabled'='false',
-      's3.endpoint'='http://10.0.27.145:9000',
+      's3.endpoint'='http://10.0.121.203:9000',
       's3.access_key'={q(minio_user)}, 's3.secret_key'={q(minio_password)},
       's3.region'='us-east-1', 'use_path_style'='true'
         )""")

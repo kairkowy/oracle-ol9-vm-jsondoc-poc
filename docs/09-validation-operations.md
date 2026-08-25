@@ -14,8 +14,8 @@ curl -fsS http://127.0.0.1:8182/q/health/ready
 sudo systemctl status doris-fe
 sudo systemctl status doris-be
 curl -fsS http://127.0.0.1:8501/health
-curl -fsS http://10.0.27.145:9000/minio/health/live
-nc -vz 10.0.27.145 8181
+curl -fsS http://10.0.121.203:9000/minio/health/live
+nc -vz 10.0.121.203 8181
 ```
 
 Oracle host에서는 Public endpoint를 확인합니다.

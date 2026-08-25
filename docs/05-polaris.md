@@ -89,7 +89,7 @@ POLARIS_REALM='POLARIS' \
 POLARIS_ROOT_CLIENT_ID='root' \
 POLARIS_CATALOG='jsondoc_catalog' \
 MINIO_BUCKET='jsondocs' \
-MINIO_ENDPOINT='http://10.0.27.145:9000' \
+MINIO_ENDPOINT='http://10.0.121.203:9000' \
 MINIO_ENDPOINT_INTERNAL='http://127.0.0.1:9000' \
 POLARIS_ROOT_CLIENT_SECRET='<실제암호>' \
 python3 scripts/create-polaris-catalog.py

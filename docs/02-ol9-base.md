@@ -16,7 +16,7 @@ sudo timedatectl set-timezone Asia/Seoul
 ```sh
 ip -4 address show
 ip route
-# VM1: 10.0.27.145, VM2: 10.0.121.203 확인
+# VM1: 10.0.121.203, VM2: 10.0.27.145 확인
 ```
 
 공통 운영 원칙:
