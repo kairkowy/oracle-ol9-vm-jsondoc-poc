@@ -1,10 +1,36 @@
 # Oracle 26ai: DG4ODBC와 ORACLE_BIGDATA
 
-대상은 기존 Oracle Database 26ai/Gateway host입니다. 예시는 `ORACLE_HOME=/home/oracle/app/oracle/dbhome`, PDB `ORCLPDB`, 애플리케이션 사용자 `LAKE`입니다. Gateway listener는 같은 host의 `127.0.0.1:1522`, Doris DSN은 VM2 Public `129.153.132.242:9030`을 사용합니다.
+대상은 기존 Oracle Database 26ai host입니다. 이 POC의 기존 DB Home은 `DB_ORACLE_HOME=/home/oracle/app/db26`, 새 Gateway Home은 `GATEWAY_HOME=/home/oracle/app/gateway/26ai/dg4odbc`, PDB는 `ORCLPDB`, 애플리케이션 사용자는 `LAKE`입니다. Gateway listener는 같은 host의 `127.0.0.1:1522`, Doris DSN은 VM2 Public `129.153.132.242:9030`을 사용합니다.
 
 ## 1. Gateway와 ODBC 설치
 
-Oracle Universal Installer로 **Oracle Database Gateway for ODBC 26ai x86-64**를 설치합니다. DB와 같은 Oracle Home을 사용한다면 기존 소프트웨어를 덮어쓰지 말고 Gateway 제품만 추가합니다. Gateway, unixODBC, ODBC 드라이버는 모두 64-bit여야 합니다.
+Oracle Software Delivery Cloud에서 제품 검색/선택 시 **Oracle Database 26ai Gateways**를 선택하고, Linux x86-64용 설치 미디어를 내려받습니다. Oracle Universal Installer(OUI)에서 **Oracle Database Gateway for ODBC** 컴포넌트를 선택합니다.
+
+운영 중인 DB Home에는 설치하지 않고 Gateway 전용 Home을 사용합니다. 이 방식은 기존 Database Home 변경 및 Gateway/DB 패치 간 간섭을 피합니다. Gateway, unixODBC, ODBC 드라이버는 모두 64-bit여야 합니다.
+
+```bash
+# oracle 사용자
+export ORACLE_BASE=/home/oracle/app
+export DB_ORACLE_HOME=/home/oracle/app/db26
+export GATEWAY_HOME=/home/oracle/app/gateway/26ai/dg4odbc
+
+mkdir -p /home/oracle/stage/dg4odbc-26ai
+cd /home/oracle/stage/dg4odbc-26ai
+unzip /다운로드경로/<Oracle-Database-26ai-Gateways-Linux-x86-64>.zip
+./runInstaller
+```
+
+OUI에서 다음을 선택합니다.
+
+- Oracle Base: `/home/oracle/app`
+- Oracle Home: `/home/oracle/app/gateway/26ai/dg4odbc`
+- Component: **Oracle Database Gateway for ODBC**
+
+설치 마지막에 OUI가 출력하는 root 권한 스크립트만 별도 root 셸에서 실행합니다. 설치 프로그램이 제시하지 않은 `root.sh` 경로를 임의로 실행하지 마십시오.
+
+```bash
+ls -l /home/oracle/app/gateway/26ai/dg4odbc/bin/dg4odbc
+```
 
 ```bash
 sudo dnf install -y unixODBC mariadb-connector-odbc
@@ -34,7 +60,7 @@ iusql -v DorisProd jsondoc_app '실제비밀번호'
 
 ## 3. Gateway 수동 구성
 
-Oracle 소유자로 다음 템플릿을 직접 반영합니다.
+Oracle 소유자로 Gateway Home을 지정한 뒤 다음 템플릿을 직접 반영합니다. DB 접속 및 `sqlplus` 작업 시에는 기존 `DB_ORACLE_HOME=/home/oracle/app/db26`을 계속 사용합니다.
 
 1. `config/oracle/initDORIS.ora` → `$ORACLE_HOME/hs/admin/initDORIS.ora`
 2. `config/oracle/listener-snippet.ora` → `$ORACLE_HOME/network/admin/listener.ora`에 병합
@@ -43,7 +69,7 @@ Oracle 소유자로 다음 템플릿을 직접 반영합니다.
 `DorisProd`는 `/etc/odbc.ini`의 system DSN 이름이고 `DORIS`는 Gateway SID, `DORIS_GATEWAY`는 Oracle Net service 이름입니다.
 
 ```bash
-export ORACLE_HOME=/home/oracle/app/oracle/dbhome
+export ORACLE_HOME=/home/oracle/app/gateway/26ai/dg4odbc
 $ORACLE_HOME/bin/lsnrctl start LISTENER_DORIS
 $ORACLE_HOME/bin/lsnrctl status LISTENER_DORIS
 $ORACLE_HOME/bin/tnsping DORIS_GATEWAY
