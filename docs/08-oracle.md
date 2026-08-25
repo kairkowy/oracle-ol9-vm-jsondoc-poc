@@ -106,10 +106,11 @@ Oracle 소유자로 Gateway Home을 지정한 뒤 다음 템플릿을 직접 반
 | `dg4odbc`, `initDORIS.ora`, `LISTENER_DORIS`, `tnsping DORIS_GATEWAY` | `GATEWAY_HOME=/home/oracle/app/gateway/26ai/dg4odbc` |
 
 ```bash
+# 평소 DB/SQL*Plus 작업 환경: 이 값을 유지한다.
 export DB_ORACLE_HOME=/home/oracle/app/db26
 export GATEWAY_HOME=/home/oracle/app/gateway/26ai/dg4odbc
-export ORACLE_HOME="$GATEWAY_HOME"
-export TNS_ADMIN="$GATEWAY_HOME/network/admin"
+export ORACLE_HOME="$DB_ORACLE_HOME"
+export TNS_ADMIN="$DB_ORACLE_HOME/network/admin"
 export PATH="$ORACLE_HOME/bin:$PATH"
 ```
 
@@ -122,10 +123,24 @@ export PATH="$ORACLE_HOME/bin:$PATH"
 `DorisProd`는 `/etc/odbc.ini`의 system DSN 이름이고 `DORIS`는 Gateway SID, `DORIS_GATEWAY`는 Oracle Net service 이름입니다.
 
 ```bash
-export ORACLE_HOME=/home/oracle/app/gateway/26ai/dg4odbc
-$ORACLE_HOME/bin/lsnrctl start LISTENER_DORIS
-$ORACLE_HOME/bin/lsnrctl status LISTENER_DORIS
-$ORACLE_HOME/bin/tnsping DORIS_GATEWAY
+# Gateway listener 제어에만 전용 Home을 일회성으로 적용한다.
+env \
+  ORACLE_HOME="$GATEWAY_HOME" \
+  TNS_ADMIN="$GATEWAY_HOME/network/admin" \
+  PATH="$GATEWAY_HOME/bin:$PATH" \
+  "$GATEWAY_HOME/bin/lsnrctl" start LISTENER_DORIS
+
+env \
+  ORACLE_HOME="$GATEWAY_HOME" \
+  TNS_ADMIN="$GATEWAY_HOME/network/admin" \
+  PATH="$GATEWAY_HOME/bin:$PATH" \
+  "$GATEWAY_HOME/bin/lsnrctl" status LISTENER_DORIS
+
+env \
+  ORACLE_HOME="$GATEWAY_HOME" \
+  TNS_ADMIN="$GATEWAY_HOME/network/admin" \
+  PATH="$GATEWAY_HOME/bin:$PATH" \
+  "$GATEWAY_HOME/bin/tnsping" DORIS_GATEWAY
 ```
 
 `HS_LANGUAGE=AMERICAN_AMERICA.WE8ISO8859P1`은 이 조합에서 필수로 검증된 호환 설정입니다. `AL32UTF8` 사용 시 MariaDB ODBC의 wide-character ABI와 충돌해 DSN/사용자명이 훼손되고 `ORA-28500`이 발생했습니다.
@@ -139,7 +154,7 @@ SELECT COUNT(*)
 FROM "jsondoc_gateway"."file_metadata"@doris_link;
 ```
 
-실패하면 `$ORACLE_HOME/hs/log/DORIS_agt_*.trc` 최신 파일과 unixODBC trace를 확인합니다. 진단이 끝나면 `HS_FDS_TRACE_LEVEL=OFF` 및 ODBC trace를 반드시 끕니다. trace에는 접속 정보가 남을 수 있습니다.
+실패하면 `$GATEWAY_HOME/hs/log/DORIS_agt_*.trc` 최신 파일과 unixODBC trace를 확인합니다. 진단이 끝나면 `HS_FDS_TRACE_LEVEL=OFF` 및 ODBC trace를 반드시 끕니다. trace에는 접속 정보가 남을 수 있습니다.
 
 ## 5. MinIO network ACL과 JSON 읽기
 
@@ -156,6 +171,9 @@ WHERE principal = 'LAKE';
 ## 알려진 오류
 
 - `ORA-28500`, trace의 SQLSTATE가 `I` 하나 및 메시지 `[` 하나: 3.1.12 wide-character 접속 문제 가능성이 높음. 3.2.8과 `HS_LANGUAGE` 확인.
+- `TNS-01201`: `$GATEWAY_HOME/network/admin/listener.ora`의 `SID_NAME=DORIS` section에서 이전 DB Home 경로가 남아 있는 경우입니다. `ORACLE_HOME`과 `LD_LIBRARY_PATH`를 모두 `/home/oracle/app/gateway/26ai/dg4odbc`로 수정합니다.
+- `ORA-12154` (DB link 조회 시): `DORIS_GATEWAY` alias가 `$DB_ORACLE_HOME/network/admin/tnsnames.ora`에 없습니다. Gateway Home뿐 아니라 DB Home에도 `tnsnames-snippet.ora`를 병합합니다.
+- `ORA-12514` (`sqlplus ...@orclpdb`): DB listener(1521)의 서비스 등록 문제이며 Gateway listener(1522)와 별개입니다. SYSDBA로 `ALTER SYSTEM REGISTER`를 실행하고, 필요하면 `LOCAL_LISTENER`를 1521 listener 주소로 설정합니다.
 - `ORA-24247`: `141.148.12.16`에 대한 `LAKE`의 `http`, `connect`와 9000 포트 범위 확인.
 - DB link는 연결되지만 테이블이 안 보임: Doris external view는 `jsondoc_gateway.file_metadata`; Oracle에서는 `"jsondoc_gateway"."file_metadata"@doris_link` 사용.
 
