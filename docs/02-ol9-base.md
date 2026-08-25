@@ -1,12 +1,12 @@
 # 2. 공통 Oracle Linux 9 준비
 
-VM1과 VM2에서 root로 수행합니다. Oracle은 기존 운영 절차를 따릅니다.
+VM1과 VM2에서 `opc` 같은 sudo 권한 관리 계정으로 수행합니다. 이미 root 셸이면 아래의 `sudo`는 생략할 수 있습니다. Oracle은 기존 운영 절차를 따릅니다.
 
 ```sh
-dnf update -y
-dnf install -y chrony curl wget tar gzip unzip jq bind-utils nc procps-ng lsof
-systemctl enable --now chronyd
-timedatectl set-timezone Asia/Seoul
+sudo dnf update -y
+sudo dnf install -y chrony curl wget tar gzip unzip jq bind-utils nc procps-ng lsof
+sudo systemctl enable --now chronyd
+sudo timedatectl set-timezone Asia/Seoul
 ```
 
 `inventory/network-addresses.env.example`에 정의된 Public/Private IP를 기준으로 구성합니다. 서비스 hostname이나 `/etc/hosts` alias는 추가하지 않습니다.

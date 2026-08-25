@@ -5,12 +5,12 @@ PostgreSQL은 Polaris 전용 영속 저장소입니다. JSON/Parquet 파일을 �
 Oracle Linux 9 기본 module과 PGDG repository를 혼합하지 마십시오. `postgresql17-server`와 `postgresql17`은 기본 AppStream에 없는 **PGDG versioned package**이므로, 먼저 PGDG repository RPM을 등록해야 합니다. 인터넷 직접 설치가 금지된 환경에서는 아래 RPM과 checksum을 검증해 내부 저장소에 반입한 뒤 그 내부 URL을 사용합니다.
 
 ```sh
-dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-dnf -qy module disable postgresql
-dnf clean all
-dnf install -y postgresql17-server postgresql17
-/usr/pgsql-17/bin/postgresql-17-setup initdb
-systemctl enable --now postgresql-17
+sudo dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+sudo dnf -qy module disable postgresql
+sudo dnf clean all
+sudo dnf install -y postgresql17-server postgresql17
+sudo /usr/pgsql-17/bin/postgresql-17-setup initdb
+sudo systemctl enable --now postgresql-17
 ```
 
 `/var/lib/pgsql/17/data/postgresql.conf`:
@@ -32,13 +32,13 @@ DB와 계정을 생성합니다. 템플릿의 비밀번호를 먼저 변경하�
 ```sh
 sudo -u postgres psql -v ON_ERROR_STOP=1 \
   -f config/postgresql/10-polaris.sql
-systemctl restart postgresql-17
+sudo systemctl restart postgresql-17
 ```
 
 검증:
 
 ```sh
-ss -ltnp | grep 5432
+sudo ss -ltnp | grep 5432
 psql 'host=127.0.0.1 port=5432 dbname=polaris user=polaris sslmode=prefer'
 ```
 

@@ -5,27 +5,27 @@ Apache Doris 4.0.1 FE와 BE를 VM2 Private IP `10.0.121.203` 한 VM에서 실행
 ## 설치
 
 ```sh
-dnf install -y java-17-openjdk-headless
-useradd --system --home-dir /opt/doris --shell /sbin/nologin doris
+sudo dnf install -y java-17-openjdk-headless
+sudo useradd --system --home-dir /opt/doris --shell /sbin/nologin doris
 ```
 
 배포본의 `fe/`, `be/`를 각각 `/opt/doris/fe`, `/opt/doris/be`에 설치합니다.
 
 ```sh
-install -d -o doris -g doris -m 0750 /var/lib/doris/fe-meta /var/lib/doris/be-storage
-cp config/doris/fe.conf /opt/doris/fe/conf/fe.conf
-cp config/doris/be.conf /opt/doris/be/conf/be.conf
-chown -R doris:doris /opt/doris/fe /opt/doris/be /var/lib/doris
-install -m 0644 config/doris/doris-fe.service config/doris/doris-be.service /etc/systemd/system/
-systemctl daemon-reload
-systemctl enable --now doris-fe
+sudo install -d -o doris -g doris -m 0750 /var/lib/doris/fe-meta /var/lib/doris/be-storage
+sudo cp config/doris/fe.conf /opt/doris/fe/conf/fe.conf
+sudo cp config/doris/be.conf /opt/doris/be/conf/be.conf
+sudo chown -R doris:doris /opt/doris/fe /opt/doris/be /var/lib/doris
+sudo install -m 0644 config/doris/doris-fe.service config/doris/doris-be.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now doris-fe
 ```
 
 FE의 9030 응답을 확인하고 같은 VM의 BE를 시작·등록합니다.
 
 ```sh
 mysqladmin -h127.0.0.1 -P9030 -uroot ping
-systemctl enable --now doris-be
+sudo systemctl enable --now doris-be
 mysql -h127.0.0.1 -P9030 -uroot \
   -e "ALTER SYSTEM ADD BACKEND '10.0.121.203:9050'"
 mysql -h127.0.0.1 -P9030 -uroot -e 'SHOW BACKENDS\G'
@@ -36,8 +36,8 @@ mysql -h127.0.0.1 -P9030 -uroot -e 'SHOW BACKENDS\G'
 ## Catalog와 객체 초기화
 
 ```sh
-python3 -m venv /opt/jsondoc-admin-venv
-/opt/jsondoc-admin-venv/bin/pip install pymysql==1.1.2
+sudo python3 -m venv /opt/jsondoc-admin-venv
+sudo /opt/jsondoc-admin-venv/bin/pip install pymysql==1.1.2
 DORIS_HOST=127.0.0.1 \
 DORIS_APP_PASSWORD='<실제암호>' \
 POLARIS_ROOT_CLIENT_SECRET='<실제암호>' \

@@ -47,11 +47,11 @@ OCI NSG/security list와 OL9 firewalld를 모두 제한합니다.
 VM1의 Private endpoint 예시:
 
 ```sh
-firewall-cmd --permanent \
+sudo firewall-cmd --permanent \
   --add-rich-rule='rule family=ipv4 source address=10.0.121.203/32 port port=9000 protocol=tcp accept'
-firewall-cmd --permanent \
+sudo firewall-cmd --permanent \
   --add-rich-rule='rule family=ipv4 source address=10.0.121.203/32 port port=8181 protocol=tcp accept'
-firewall-cmd --reload
+sudo firewall-cmd --reload
 ```
 
 Public IP를 직접 사용하면 공인 CA TLS 인증서 발급과 IP 변경 대응이 제한됩니다. 이 POC는 IP 고정과 source ACL을 전제로 하며, 운영 전환 시 DNS 이름, TLS 및 load balancer를 권장합니다.

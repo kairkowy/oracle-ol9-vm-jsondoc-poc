@@ -5,8 +5,10 @@ Polaris binary distribution과 Admin Tool은 같은 1.7.0 버전을 사용합니
 Polaris와 PostgreSQL은 같은 VM이므로 JDBC URL은 `jdbc:postgresql://127.0.0.1:5432/polaris`를 사용합니다. PostgreSQL이 준비된 뒤 Polaris를 시작합니다.
 
 ```sh
-dnf install -y java-21-openjdk-headless
-useradd --system --home-dir /opt/polaris --shell /sbin/nologin polaris
+sudo dnf install -y java-21-openjdk-headless
+getent group polaris >/dev/null || sudo groupadd --system polaris
+id polaris >/dev/null 2>&1 || sudo useradd --system --gid polaris \
+  --home-dir /opt/polaris --shell /sbin/nologin polaris
 
 POLARIS_VERSION=1.7.0
 curl -fLO https://downloads.apache.org/polaris/${POLARIS_VERSION}/polaris-bin-${POLARIS_VERSION}.tgz
@@ -14,23 +16,30 @@ curl -fLO https://downloads.apache.org/polaris/${POLARIS_VERSION}/polaris-bin-${
 expected=$(awk '{print $1}' polaris-bin-${POLARIS_VERSION}.tgz.sha512)
 echo "${expected}  polaris-bin-${POLARIS_VERSION}.tgz" | sha512sum --check -
 
-tar -xzf polaris-bin-1.7.0.tgz -C /opt
-ln -s /opt/polaris-bin-${POLARIS_VERSION} /opt/polaris
-chown -R polaris:polaris /opt/polaris-bin-${POLARIS_VERSION}
-install -d -o root -g polaris -m 0750 /etc/polaris
-install -o root -g polaris -m 0640 config/polaris/polaris.env.example /etc/polaris/polaris.env
-vi /etc/polaris/polaris.env
+sudo tar -xzf polaris-bin-${POLARIS_VERSION}.tgz -C /opt
+sudo ln -sfnT /opt/polaris-bin-${POLARIS_VERSION} /opt/polaris
+sudo chown -R polaris:polaris /opt/polaris-bin-${POLARIS_VERSION}
+sudo chmod 755 /opt/polaris-bin-${POLARIS_VERSION}/bin/admin \
+  /opt/polaris-bin-${POLARIS_VERSION}/bin/server
+# archive를 /home 아래에서 내려받았으므로 /opt 이동 후 SELinux label을 복구한다.
+# user_home_t가 남으면 systemd가 203/EXEC으로 실행을 차단한다.
+sudo restorecon -RFv /opt/polaris-bin-${POLARIS_VERSION}
+sudo install -d -o root -g polaris -m 0750 /etc/polaris
+sudo install -o root -g polaris -m 0640 config/polaris/polaris.env.example /etc/polaris/polaris.env
+sudo vi /etc/polaris/polaris.env
 ```
 
 PostgreSQL schema와 root realm을 최초 한 번 bootstrap합니다.
 
 ```sh
-set -a
-. /etc/polaris/polaris.env
-set +a
-sudo -u polaris /opt/polaris/bin/admin bootstrap \
-  -r POLARIS \
-  -c POLARIS,root,'<POLARIS_ROOT_CLIENT_SECRET>'
+sudo -u polaris /bin/bash -c '
+  set -a
+  . /etc/polaris/polaris.env
+  set +a
+  exec /opt/polaris/bin/admin bootstrap \
+    -r POLARIS \
+    -c POLARIS,root,"<POLARIS_ROOT_CLIENT_SECRET>"
+'
 ```
 
 Admin Tool과 server 버전은 반드시 일치해야 합니다. bootstrap을 schema migration 명령으로 사용하지 않습니다.
@@ -38,10 +47,10 @@ Admin Tool과 server 버전은 반드시 일치해야 합니다. bootstrap을 sc
 서비스를 설치합니다.
 
 ```sh
-install -m 0644 config/polaris/polaris.service /etc/systemd/system/polaris.service
-systemctl daemon-reload
-systemctl enable --now polaris
-journalctl -u polaris -f
+sudo install -m 0644 config/polaris/polaris.service /etc/systemd/system/polaris.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now polaris
+sudo journalctl -u polaris -f
 ```
 
 검증:
@@ -56,6 +65,13 @@ curl -fsS -X POST \
   --data-urlencode client_secret='<실제암호>' \
   --data-urlencode scope='PRINCIPAL_ROLE:ALL' \
   http://127.0.0.1:8181/api/catalog/v1/oauth/tokens | jq .
+```
+
+`/q/health`에 MongoDB health check가 함께 보여도 relational-jdbc 사용 여부는
+PostgreSQL schema로 확인합니다.
+
+```sh
+sudo -u postgres psql -d polaris -c '\\dt polaris_schema.*'
 ```
 
 Catalog 생성은 `scripts/create-polaris-catalog.py`를 VM1에서 실행합니다. VM2 client가 받을 `endpoint`는 VM1 Private IP, VM1 내부 접근용 `endpointInternal`은 localhost로 분리합니다.
