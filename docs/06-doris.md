@@ -13,6 +13,39 @@ sudo useradd --system --home-dir /opt/doris --shell /sbin/nologin doris
 `mysql`, `mysqladmin` client를 제공합니다. Doris binary 자체에는 이 client가
 포함되지 않습니다.
 
+OpenJDK의 실제 설치 경로는 OL9 package update마다 달라질 수 있으므로 고정
+경로를 사용하지 않습니다. 아래 명령으로 Java home을 계산합니다.
+
+```sh
+JAVA_BIN=$(readlink -f "$(command -v java)")
+JAVA_HOME=$(dirname "$(dirname "$JAVA_BIN")")
+echo "$JAVA_HOME"
+test -x "$JAVA_HOME/bin/java" && echo 'Java: OK'
+```
+
+Doris BE 기동 전에 kernel map limit을 영구 설정하고 swap을 해제해야 합니다.
+
+```sh
+sudo tee /etc/sysctl.d/99-doris.conf >/dev/null <<'EOF'
+vm.max_map_count = 2000000
+EOF
+sudo sysctl --system
+sysctl vm.max_map_count
+
+swapon --show
+sudo swapoff -a
+swapon --show
+```
+
+재부팅 후에도 swap이 활성화되지 않게 하려면 `/etc/fstab`의 활성 swap 행을
+주석 처리합니다. 변경 전에는 반드시 백업합니다.
+
+```sh
+sudo cp -a /etc/fstab /etc/fstab.before-doris
+grep -nE '^[^#].*\\sswap\\s' /etc/fstab
+sudo vi /etc/fstab
+```
+
 `bin-x64` 배포본은 AVX2 CPU용입니다. 먼저 `grep -m1 -o avx2 /proc/cpuinfo`로 확인합니다. 출력이 없으면 아래 URL의 `bin-x64` 대신 `bin-x64-noavx2` 배포본을 사용해야 합니다. 공식 배포처에서 binary와 SHA-512을 내려받아 검증한 뒤 `/opt`에 풉니다.
 
 ```sh
@@ -36,6 +69,9 @@ ls -ld /opt/doris /opt/doris/fe/conf /opt/doris/be/conf
 sudo install -d -o doris -g doris -m 0750 /var/lib/doris/fe-meta /var/lib/doris/be-storage
 sudo cp config/doris/fe.conf /opt/doris/fe/conf/fe.conf
 sudo cp config/doris/be.conf /opt/doris/be/conf/be.conf
+sudo sed -i "s|^JAVA_HOME = .*|JAVA_HOME = ${JAVA_HOME}|" \
+  /opt/doris/fe/conf/fe.conf /opt/doris/be/conf/be.conf
+sudo -u doris test -x "$JAVA_HOME/bin/java" && echo 'Doris Java: OK'
 sudo chown -R doris:doris /opt/doris/fe /opt/doris/be /var/lib/doris
 sudo install -m 0644 config/doris/doris-fe.service config/doris/doris-be.service /etc/systemd/system/
 sudo systemctl daemon-reload
