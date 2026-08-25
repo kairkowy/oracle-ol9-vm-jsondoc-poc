@@ -7,9 +7,16 @@ Polaris와 PostgreSQL은 같은 VM이므로 JDBC URL은 `jdbc:postgresql://127.0
 ```sh
 dnf install -y java-21-openjdk-headless
 useradd --system --home-dir /opt/polaris --shell /sbin/nologin polaris
+
+POLARIS_VERSION=1.7.0
+curl -fLO https://downloads.apache.org/polaris/${POLARIS_VERSION}/polaris-bin-${POLARIS_VERSION}.tgz
+curl -fLO https://downloads.apache.org/polaris/${POLARIS_VERSION}/polaris-bin-${POLARIS_VERSION}.tgz.sha512
+expected=$(awk '{print $1}' polaris-bin-${POLARIS_VERSION}.tgz.sha512)
+echo "${expected}  polaris-bin-${POLARIS_VERSION}.tgz" | sha512sum --check -
+
 tar -xzf polaris-bin-1.7.0.tgz -C /opt
-ln -s /opt/<실제-polaris-1.7.0-directory> /opt/polaris
-chown -R polaris:polaris /opt/<실제-polaris-1.7.0-directory>
+ln -s /opt/polaris-bin-${POLARIS_VERSION} /opt/polaris
+chown -R polaris:polaris /opt/polaris-bin-${POLARIS_VERSION}
 install -d -o root -g polaris -m 0750 /etc/polaris
 install -o root -g polaris -m 0640 config/polaris/polaris.env.example /etc/polaris/polaris.env
 vi /etc/polaris/polaris.env

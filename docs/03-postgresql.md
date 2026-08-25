@@ -2,11 +2,12 @@
 
 PostgreSQL은 Polaris 전용 영속 저장소입니다. JSON/Parquet 파일을 저장하지 않습니다.
 
-Oracle Linux 9 기본 module과 PGDG repository를 혼합하지 마십시오. PostgreSQL 공식 Red Hat 계열 설치 페이지에서 현재 OL9용 PGDG repository RPM URL을 확인하고, 승인된 내부 저장소에서 설치합니다.
+Oracle Linux 9 기본 module과 PGDG repository를 혼합하지 마십시오. `postgresql17-server`와 `postgresql17`은 기본 AppStream에 없는 **PGDG versioned package**이므로, 먼저 PGDG repository RPM을 등록해야 합니다. 인터넷 직접 설치가 금지된 환경에서는 아래 RPM과 checksum을 검증해 내부 저장소에 반입한 뒤 그 내부 URL을 사용합니다.
 
 ```sh
+dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 dnf -qy module disable postgresql
-dnf install -y <검증한-pgdg-repository-rpm>
+dnf clean all
 dnf install -y postgresql17-server postgresql17
 /usr/pgsql-17/bin/postgresql-17-setup initdb
 systemctl enable --now postgresql-17
