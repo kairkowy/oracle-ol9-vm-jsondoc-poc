@@ -23,6 +23,74 @@ VM1↔VM2 통신에는 Private IP를 사용한다. Oracle DB host에서 Doris는
 - VM1: VM2에서 `9000`, `8181`; 관리자에서 `9001`, `8182`; PostgreSQL `5432`는 localhost only
 - VM2: Oracle DB host에서 `9030`; 사용자에서 `8501`; Doris 내부 포트는 Public 개방 금지
 
+### 전체 토폴로지
+
+```mermaid
+flowchart LR
+  Browser["Browser\nJSON upload"] -->|"Public 129.153.132.242:8501"| App
+  Oracle["Oracle Database 26ai"] -->|"DG4ODBC / MariaDB ODBC\nPublic 129.153.132.242:9030"| DorisFE
+  Oracle -->|"ORACLE_BIGDATA HTTP\nPublic 141.148.12.16:9000"| MinIO
+
+  subgraph VM2["VM2 data-lake-app · 10.0.27.145"]
+    App["JSONDoc App\nFastAPI :8501"] -->|"localhost :9030"| DorisFE["Doris FE\nMySQL :9030"]
+    DorisFE <--> DorisBE["Doris BE\n9060 / 8040 / 8060"]
+  end
+
+  subgraph VM1["VM1 data-lake-vm · 10.0.121.203"]
+    MinIO["MinIO\nS3 :9000"]
+    Polaris["Apache Polaris\nREST :8181"]
+    PG["PostgreSQL 17\nlocalhost :5432"]
+    Polaris --> PG
+  end
+
+  App -->|"S3 Private :9000"| MinIO
+  DorisBE -->|"S3 Private :9000"| MinIO
+  DorisFE -->|"Iceberg REST/OAuth\nPrivate :8181"| Polaris
+```
+
+### VM별 소프트웨어 스택
+
+```mermaid
+flowchart TB
+  subgraph VM1["VM1 · data-lake-vm"]
+    OS1["Oracle Linux 9"]
+    PG1["PostgreSQL 17\nPolaris persistence"]
+    M1["MinIO\nJSON + Iceberg files"]
+    P1["Apache Polaris 1.7\nIceberg REST catalog"]
+    OS1 --> PG1
+    OS1 --> M1
+    OS1 --> P1
+    P1 --> PG1
+    P1 --> M1
+  end
+```
+
+```mermaid
+flowchart TB
+  subgraph VM2["VM2 · data-lake-app"]
+    OS2["Oracle Linux 9"]
+    FE["Apache Doris FE 4.0.1\nMySQL :9030"]
+    BE["Apache Doris BE 4.0.1\nIceberg scan / write"]
+    APP["JSONDoc App\nFastAPI :8501"]
+    OS2 --> FE
+    OS2 --> BE
+    OS2 --> APP
+    APP --> FE
+    FE <--> BE
+  end
+```
+
+```mermaid
+flowchart TB
+  subgraph ORA["기존 Oracle Database 26ai host"]
+    DB["Oracle 26ai\nORCLPDB / LAKE"]
+    GW["Oracle Database Gateway for ODBC\ndg4odbc :1522"]
+    UODBC["unixODBC"]
+    MODBC["MariaDB Connector/ODBC 3.2.8\n무료 / 64-bit"]
+    DB --> GW --> UODBC --> MODBC
+  end
+```
+
 ## 2. 공통 OL9 준비
 
 VM1/VM2에서 `opc` 같은 sudo 권한 관리 계정으로 실행한다.
