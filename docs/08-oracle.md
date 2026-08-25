@@ -113,9 +113,11 @@ export TNS_ADMIN="$GATEWAY_HOME/network/admin"
 export PATH="$ORACLE_HOME/bin:$PATH"
 ```
 
-1. `config/oracle/initDORIS.ora` → `$ORACLE_HOME/hs/admin/initDORIS.ora`
-2. `config/oracle/listener-snippet.ora` → `$ORACLE_HOME/network/admin/listener.ora`에 병합
-3. `config/oracle/tnsnames-snippet.ora` → `$ORACLE_HOME/network/admin/tnsnames.ora`에 병합
+1. `config/oracle/initDORIS.ora` → `$GATEWAY_HOME/hs/admin/initDORIS.ora`
+2. `config/oracle/listener-snippet.ora` → `$GATEWAY_HOME/network/admin/listener.ora`에 병합
+3. `config/oracle/tnsnames-snippet.ora` → `$GATEWAY_HOME/network/admin/tnsnames.ora`와 `$DB_ORACLE_HOME/network/admin/tnsnames.ora` 모두에 병합
+
+`GATEWAY_HOME`의 alias는 Gateway `tnsping`용이고, `DB_ORACLE_HOME`의 같은 alias는 Database server가 DB link를 해석할 때 필요합니다. 두 Home에서 하나의 공용 `TNS_ADMIN`을 사용하도록 이미 구성했다면 공용 `tnsnames.ora`에 한 번만 추가합니다.
 
 `DorisProd`는 `/etc/odbc.ini`의 system DSN 이름이고 `DORIS`는 Gateway SID, `DORIS_GATEWAY`는 Oracle Net service 이름입니다.
 
